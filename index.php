@@ -11,15 +11,15 @@ function timeThis($s) {
         static $timings;
 
         if (empty($prevTime)) {
-                $prevTime = ['start', microtime(true)];
-                $timings = [];
+                $prevTime = array('start', microtime(true));
+                $timings = array();
         } // if
 
-        $timings[] = [$prevTime[0], $prevTime[1]];
-        $prevTime = [$s, microtime(true)];
+        $timings[] = array($prevTime[0], $prevTime[1]);
+        $prevTime = array($s, microtime(true));
 
         if ($s == 'end') {
-                $timings[] = ['end', microtime(true)];
+                $timings[] = array('end', microtime(true));
                 $prev = $timings[0][1];
 
                 foreach($timings as $t) {
