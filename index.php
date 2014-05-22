@@ -64,27 +64,29 @@ if(isset($_POST['lootlog'])){
 	//make a simple typeid string for the json request
 	$itemids = '';
 	foreach($lootstack as $loot){
-		if ($loot->itemprice !== null) {
+		if ($loot->itemprice === null) {
 			$itemids.= empty($itemids) ? $loot->itemid : ',' . $loot->itemid;
 		}
 	}
 
 	//do a json request @ the EMDR source
-	$emdr = file_get_contents('http://api.eve-marketdata.com/api/item_prices2.json?char_name=' . $eve_character_name . '&type_ids=' . $itemids . '&region_ids=10000002&buysell=s');
-	$pricelist = json_decode($emdr);
-	if(!is_object($pricelist)){
-		die("<b>error:</b> something went wrong using the eve-marketdata.com api.<br />\nThis is the server answer:<br />\n" . $emdr);
-	}
-	//set the prices in the stack
-	foreach($pricelist->emd->result as $priceresult){
-		foreach($lootstack as $loot){
-			if($loot->itemid == $priceresult->row->typeID){
-				$loot->itemprice = $priceresult->row->price;
-	
-				$db_conn->exec('INSERT INTO eve_inv_pricecache(type_id, cached_price, valid_till) 
-				                  VALUES(' . (int) $loot->itemid . ', 
-				                         ' . (float) $loot->itemprice . ',
-				                         NOW() + INTERVAL 1 DAY)');
+	if (!empty($itemids)) {
+		$emdr = file_get_contents('http://api.eve-marketdata.com/api/item_prices2.json?char_name=' . $eve_character_name . '&type_ids=' . $itemids . '&region_ids=10000002&buysell=s');
+		$pricelist = json_decode($emdr);
+		if(!is_object($pricelist)){
+			die("<b>error:</b> something went wrong using the eve-marketdata.com api.<br />\nThis is the server answer:<br />\n" . $emdr);
+		}
+		//set the prices in the stack
+		foreach($pricelist->emd->result as $priceresult){
+			foreach($lootstack as $loot){
+				if($loot->itemid == $priceresult->row->typeID){
+					$loot->itemprice = $priceresult->row->price;
+		
+					$db_conn->exec('INSERT INTO eve_inv_pricecache(type_id, cached_price, valid_till) 
+					                  VALUES(' . (int) $loot->itemid . ', 
+					                         ' . (float) $loot->itemprice . ',
+					                         NOW() + INTERVAL 1 DAY)');
+				}
 			}
 		}
 	}
