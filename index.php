@@ -31,6 +31,7 @@ if(isset($_POST['lootlog'])){
 	$_POST['lootlog'] = preg_replace('#\s{3,9}#', "\t", $_POST['lootlog']);
 	
 	//split the lootlog by lines
+	$itemNameList = '';
 	foreach(preg_split("/((\r?\n)|(\r\n?))/", $_POST['lootlog']) as $lootline){
 		//split the lootlog by tabs
 		$lootarray = preg_split('/\t+/', $lootline);
@@ -42,27 +43,21 @@ if(isset($_POST['lootlog'])){
 		
 		//add item to stack
 		$lootstack[$loot->itemname] = $loot;
+
+		$itemNameList .= empty($itemNameList) ? $db_conn->quote($lootItem->itemname) : ',' . $db_conn->quote($lootItem->itemname);
 	}
 
-	/*
-	 * Retrieve all items in one go
-	 */
-	$itemNameList = '';
-	foreach($lootstack as $lootItem) {
-		$itemNameList .= empty($itemNameList) ? $db_conn->quote($lootItem->itemname) : ',' . $db_conn->quote($lootItem->itemname);
-	} // foreach
-	
-	//get itemid from the database (EMDR dump)
-	$itemdetails = $db_conn->query('SELECT * FROM eve_inv_types WHERE name IN (' . $itemNameList . ') ');
-	foreach($itemdetails as $itemrow){
-		$lootstack[$itemrow['name']]->itemid = $itemrow['type_id'];
-	} // foreach
+	if (!empty($itemNameList)) {
+		$itemdetails = $db_conn->query('SELECT * FROM eve_inv_types WHERE name IN (' . $itemNameList . ') ');
+		foreach($itemdetails as $itemrow){
+			$lootstack[$itemrow['name']]->itemid = $itemrow['type_id'];
+		} // foreach
+	} // if
 
 	//make a simple typeid string for the json request
-	$first = true;
+	$itemids = '';
 	foreach($lootstack as $loot){
-		$itemids.= $first ? $loot->itemid : ',' . $loot->itemid;
-		$first = false;
+		$itemids.= empty($itemids) ? $loot->itemid : ',' . $loot->itemid;
 	}
 
 	//do a json request @ the EMDR source
