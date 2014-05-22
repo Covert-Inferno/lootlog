@@ -27,6 +27,7 @@ function timeThis($s) {
                 } // foreach
         } // if
 } // timeThis()
+timeThis('begin');
 
 //initialize a simple loot class
 class Loot {
@@ -41,6 +42,7 @@ $lootstack = array();
 //check if a lootlog is being posted
 if(isset($_POST['lootlog'])){
 	$db_conn = new PDO($db_connectionString, $db_username, $db_password);
+	timeThis('after db connect');
 
 	/* 
 	 * replace 3-9 spaces with tabs in case the lootlog was copied from a mail 
