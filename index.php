@@ -63,7 +63,7 @@ if(isset($_POST['lootlog'])){
 		//put data in a new loot item
 		$loot = new Loot();
 		$loot->itemname = $lootarray[0];
-		$loot->itemcount = (is_numeric($lootarray[1]) ? $lootarray[1] : 1);
+		$loot->itemcount = preg_replace("/[^0-9]/","", (is_numeric($lootarray[1]) ? $lootarray[1] : 1));
 		
 		//add item to stack
 		if (isset($lootstack[strtolower($loot->itemname)])) {
@@ -175,4 +175,6 @@ if(isset($_POST['lootlog'])){
 </body>
 </html>
 <?php
+if(isset($_GET['debug'])){
 	timeThis('end');
+}
