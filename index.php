@@ -64,7 +64,11 @@ if(isset($_POST['lootlog'])){
 		$loot->itemcount = (is_numeric($lootarray[1]) ? $lootarray[1] : 1);
 		
 		//add item to stack
-		$lootstack[strtolower($loot->itemname)] = $loot;
+		if (isset($lootstack[strtolower($loot->itemname)])) {
+			$lootstack[strtolower($loot->itemname)]->itemcount += $loot->itemcount;
+		} else {
+			$lootstack[strtolower($loot->itemname)] = $loot;
+		} // else
 
 		$itemNameList .= empty($itemNameList) ? $db_conn->quote($loot->itemname) : ',' . $db_conn->quote($loot->itemname);
 	}
