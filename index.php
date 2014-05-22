@@ -6,7 +6,27 @@ $db_username = 'PutYourUsernameHere';
 $db_password = 'PutYourPasswordHere';
 $eve_character_name = 'PutACharacterNameWhereYouCanBeContactedHere';
 
-$db_conn = new PDO($db_connectionString, $db_username, $db_password);
+function timeThis($s) {
+        static $prevTime;
+        static $timings;
+
+        if (empty($prevTime)) {
+                $prevTime = ['start', microtime(true)];
+                $timings = [];
+        } // if
+
+        $timings[] = [$prevTime[0], $prevTime[1]];
+        $prevTime = [$s, microtime(true)];
+
+        if ($s == 'end') {
+                $timings[] = ['end', microtime(true)];
+                $prev = $timings[0][1];
+
+                foreach($timings as $t) {
+                        echo $t[0] . ' => ' . ($t[1] - $prev) . PHP_EOL;
+                } // foreach
+        } // if
+} // timeThis()
 
 //initialize a simple loot class
 class Loot {
@@ -20,6 +40,7 @@ $lootstack = array();
 
 //check if a lootlog is being posted
 if(isset($_POST['lootlog'])){
+	$db_conn = new PDO($db_connectionString, $db_username, $db_password);
 
 	/* 
 	 * replace 3-9 spaces with tabs in case the lootlog was copied from a mail 
@@ -27,7 +48,9 @@ if(isset($_POST['lootlog'])){
 	 * sadly since that converts to a single space. If someone has suggestions
 	 * to fix this without losing too much performance, please let me know)
 	 */
+	timeThis('split lootlog - step 1');
 	$lootLog = preg_replace('#\s{3,9}#', "\t", $_POST['lootlog']);
+	timeThis('split lootlog - done');
 
 	//split the lootlog by lines
 	$itemNameList = '';
@@ -45,10 +68,12 @@ if(isset($_POST['lootlog'])){
 
 		$itemNameList .= empty($itemNameList) ? $db_conn->quote($loot->itemname) : ',' . $db_conn->quote($loot->itemname);
 	}
+	timeThis('foreach over loot log list done');
 
 	if (!empty($itemNameList)) {
 		/* delete items from the cache which are expired. we have a small race in here, but that won't matter */
 		$db_conn->exec('DELETE FROM eve_inv_pricecache WHERE price_valid_till < NOW()');
+		timeThis('emptying out database done');
 		
 		/* and retrieve items from the cache */
 		$itemdetails = $db_conn->query('SELECT eit.name, eit.type_id, eip.cached_price 
@@ -59,6 +84,7 @@ if(isset($_POST['lootlog'])){
 			$lootstack[strtolower($itemrow['name'])]->itemid = $itemrow['type_id'];
 			$lootstack[strtolower($itemrow['name'])]->itemprice = $itemrow['cached_price'];
 		} // foreach
+		timeThis('query for all items done');
 	} // if
 
 	//make a simple typeid string for the json request
@@ -68,6 +94,7 @@ if(isset($_POST['lootlog'])){
 			$itemids.= empty($itemids) ? $loot->itemid : ',' . $loot->itemid;
 		}
 	}
+	timeThis('created list of itemids to query');
 
 	//do a json request @ the EMDR source
 	if (!empty($itemids)) {
@@ -90,12 +117,14 @@ if(isset($_POST['lootlog'])){
 			}
 		}
 	}
-	
+	timeThis('queried API');
+
 	//get a total price
 	$totalprice = 0.0;
 	foreach($lootstack as $loot){
 		$totalprice += $loot->itemprice * $loot->itemcount;
 	}
+	timeThis('calculated total price');
 }
 ?>
 <html>
@@ -139,3 +168,5 @@ if(isset($_POST['lootlog'])){
 </form>
 </body>
 </html>
+<?php
+	timeThis('end');
