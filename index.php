@@ -43,7 +43,7 @@ if(isset($_POST['lootlog'])){
 		//add item to stack
 		$lootstack[$loot->itemname] = $loot;
 
-		$itemNameList .= empty($itemNameList) ? $db_conn->quote($lootItem->itemname) : ',' . $db_conn->quote($lootItem->itemname);
+		$itemNameList .= empty($itemNameList) ? $db_conn->quote($loot->itemname) : ',' . $db_conn->quote($loot->itemname);
 	}
 
 	if (!empty($itemNameList)) {
