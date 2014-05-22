@@ -51,10 +51,9 @@ if(isset($_POST['lootlog'])){
 	}
 
 	//make a simple typeid string for the json request
-	$first = true;
+	$itemids = '';
 	foreach($lootstack as $loot){
-		$itemids.= $first ? $loot->itemid : ',' . $loot->itemid;
-		$first = false;
+		$itemids.= empty($itemids) ? $loot->itemid : ',' . $loot->itemid;
 	}
 
 	//do a json request @ the EMDR source
