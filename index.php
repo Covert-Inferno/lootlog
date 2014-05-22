@@ -40,20 +40,29 @@ if(isset($_POST['lootlog'])){
 		$loot->itemname = $lootarray[0];
 		$loot->itemcount = (is_numeric($lootarray[1]) ? $lootarray[1] : 1);
 		
-		//get itemid from the database (EMDR dump)
-		$itemdetails = $db_conn->query('SELECT * FROM eve_inv_types WHERE name = ' . $db_conn->quote($loot->itemname) . ' LIMIT 1');
-		foreach($itemdetails as $itemrow){
-			$loot->itemid = $itemrow['type_id'];
-		}
-		
 		//add item to stack
-		$lootstack[] = $loot;
+		$lootstack[$loot->itemname] = $loot;
 	}
 
+	/*
+	 * Retrieve all items in one go
+	 */
+	$itemNameList = '';
+	foreach($lootstack as $lootItem) {
+		$itemNameList .= empty($itemNameList) ? $db_conn->quote($lootItem->itemname) : ',' . $db_conn->quote($lootItem->itemname);
+	} // foreach
+	
+	//get itemid from the database (EMDR dump)
+	$itemdetails = $db_conn->query('SELECT * FROM eve_inv_types WHERE name IN (' . $itemNameList . ') ');
+	foreach($itemdetails as $itemrow){
+		$lootstack[$itemrow['name']]->itemid = $itemrow['type_id'];
+	} // foreach
+
 	//make a simple typeid string for the json request
-	$itemids = '';
+	$first = true;
 	foreach($lootstack as $loot){
-		$itemids.= empty($itemids) ? $loot->itemid : ',' . $loot->itemid;
+		$itemids.= $first ? $loot->itemid : ',' . $loot->itemid;
+		$first = false;
 	}
 
 	//do a json request @ the EMDR source
