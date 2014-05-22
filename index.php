@@ -41,15 +41,15 @@ if(isset($_POST['lootlog'])){
 		$loot->itemcount = (is_numeric($lootarray[1]) ? $lootarray[1] : 1);
 		
 		//add item to stack
-		$lootstack[$loot->itemname] = $loot;
+		$lootstack[strtolower($loot->itemname)] = $loot;
 
 		$itemNameList .= empty($itemNameList) ? $db_conn->quote($loot->itemname) : ',' . $db_conn->quote($loot->itemname);
 	}
 
 	if (!empty($itemNameList)) {
-		$itemdetails = $db_conn->query('SELECT * FROM eve_inv_types WHERE name IN (' . $itemNameList . ') ');
+		$itemdetails = $db_conn->query('SELECT name, type_id FROM eve_inv_types WHERE name IN (' . $itemNameList . ') ');
 		foreach($itemdetails as $itemrow){
-			$lootstack[$itemrow['name']]->itemid = $itemrow['type_id'];
+			$lootstack[strtolower($itemrow['name'])]->itemid = $itemrow['type_id'];
 		} // foreach
 	} // if
 
