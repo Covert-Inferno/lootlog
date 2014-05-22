@@ -9,7 +9,7 @@ $eve_character_name = 'PutACharacterNameWhereYouCanBeContactedHere';
 $db_conn = new PDO($db_connectionString, $db_username, $db_password);
 
 //initialize a simple loot class
-class loot{
+class Loot {
 	public $itemid;
 	public $itemname;
 	public $itemcount;
@@ -27,28 +27,31 @@ if(isset($_POST['lootlog'])){
 	 * sadly since that converts to a single space. If someone has suggestions
 	 * to fix this without losing too much performance, please let me know)
 	 */
-	 
-	$_POST['lootlog'] = preg_replace('#\s{3,9}#', "\t", $_POST['lootlog']);
-	
+	$lootLog = preg_replace('#\s{3,9}#', "\t", $_POST['lootlog']);
+
 	//split the lootlog by lines
-	foreach(preg_split("/((\r?\n)|(\r\n?))/", $_POST['lootlog']) as $lootline){
+	$itemNameList = '';
+	foreach(preg_split("/((\r?\n)|(\r\n?))/", $lootLog) as $lootline){
 		//split the lootlog by tabs
 		$lootarray = preg_split('/\t+/', $lootline);
 		
 		//put data in a new loot item
-		$loot = new loot();
+		$loot = new Loot();
 		$loot->itemname = $lootarray[0];
 		$loot->itemcount = (is_numeric($lootarray[1]) ? $lootarray[1] : 1);
 		
-		//get itemid from the database (EMDR dump)
-		$itemdetails = $db_conn->query('SELECT * FROM eve_inv_types WHERE name = ' . $db_conn->quote($loot->itemname) . ' LIMIT 1');
-		foreach($itemdetails as $itemrow){
-			$loot->itemid = $itemrow['type_id'];
-		}
-		
 		//add item to stack
-		$lootstack[] = $loot;
+		$lootstack[$loot->itemname] = $loot;
+
+		$itemNameList .= empty($itemNameList) ? $db_conn->quote($lootItem->itemname) : ',' . $db_conn->quote($lootItem->itemname);
 	}
+
+	if (!empty($itemNameList)) {
+		$itemdetails = $db_conn->query('SELECT * FROM eve_inv_types WHERE name IN (' . $itemNameList . ') ');
+		foreach($itemdetails as $itemrow){
+			$lootstack[$itemrow['name']]->itemid = $itemrow['type_id'];
+		} // foreach
+	} // if
 
 	//make a simple typeid string for the json request
 	$itemids = '';
