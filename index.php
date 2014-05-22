@@ -9,7 +9,7 @@ $eve_character_name = 'PutACharacterNameWhereYouCanBeContactedHere';
 $db_conn = new PDO($db_connectionString, $db_username, $db_password);
 
 //initialize a simple loot class
-class loot{
+class Loot {
 	public $itemid;
 	public $itemname;
 	public $itemcount;
@@ -37,7 +37,7 @@ if(isset($_POST['lootlog'])){
 		$lootarray = preg_split('/\t+/', $lootline);
 		
 		//put data in a new loot item
-		$loot = new loot();
+		$loot = new Loot();
 		$loot->itemname = $lootarray[0];
 		$loot->itemcount = (is_numeric($lootarray[1]) ? $lootarray[1] : 1);
 		
