@@ -64,7 +64,7 @@ if(isset($_POST['lootlog'])){
 	//make a simple typeid string for the json request
 	$itemids = '';
 	foreach($lootstack as $loot){
-		if ($loot->itemprice !== null) {
+		if ($loot->itemprice === null) {
 			$itemids.= empty($itemids) ? $loot->itemid : ',' . $loot->itemid;
 		}
 	}
