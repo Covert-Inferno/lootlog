@@ -60,8 +60,11 @@ if(isset($_POST['lootlog'])){
 	}
 
 	//do a json request @ the EMDR source
-	$pricelist = json_decode(file_get_contents('http://api.eve-marketdata.com/api/item_prices2.json?char_name=' . $eve_character_name . '&type_ids=' . $itemids . '&region_ids=10000002&buysell=s'));
-
+	$emdr = file_get_contents('http://api.eve-marketdata.com/api/item_prices2.json?char_name=' . $eve_character_name . '&type_ids=' . $itemids . '&region_ids=10000002&buysell=s');
+	$pricelist = json_decode($emdr);
+	if(!is_object($pricelist)){
+		die("<b>error:</b> something went wrong using the eve-marketdata.com api.<br />\nThis is the server answer:<br />\n" . $emdr);
+	}
 	//set the prices in the stack
 	foreach($pricelist->emd->result as $priceresult){
 		foreach($lootstack as $loot){
