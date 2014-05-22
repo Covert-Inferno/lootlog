@@ -21,7 +21,7 @@ function timeThis($s) {
         if ($s == 'end') {
                 $timings[] = array('end', microtime(true));
                 $prev = $timings[0][1];
-
+		echo('<pre>');
                 foreach($timings as $t) {
                         echo $t[0] . ' => ' . ($t[1] - $prev) . PHP_EOL;
                 } // foreach
