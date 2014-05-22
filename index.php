@@ -27,12 +27,11 @@ if(isset($_POST['lootlog'])){
 	 * sadly since that converts to a single space. If someone has suggestions
 	 * to fix this without losing too much performance, please let me know)
 	 */
-	 
-	$_POST['lootlog'] = preg_replace('#\s{3,9}#', "\t", $_POST['lootlog']);
-	
+	$lootLog = preg_replace('#\s{3,9}#', "\t", $_POST['lootlog']);
+
 	//split the lootlog by lines
 	$itemNameList = '';
-	foreach(preg_split("/((\r?\n)|(\r\n?))/", $_POST['lootlog']) as $lootline){
+	foreach(preg_split("/((\r?\n)|(\r\n?))/", $lootLog) as $lootline){
 		//split the lootlog by tabs
 		$lootarray = preg_split('/\t+/', $lootline);
 		
