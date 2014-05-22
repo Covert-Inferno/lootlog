@@ -47,16 +47,24 @@ if(isset($_POST['lootlog'])){
 	}
 
 	if (!empty($itemNameList)) {
-		$itemdetails = $db_conn->query('SELECT name, type_id FROM eve_inv_types WHERE name IN (' . $itemNameList . ') ');
+		$itemdetails = $db_conn->query('SELECT name, type_id, last_price, (price_valid_till < NOW()) as price_is_valid FROM eve_inv_types WHERE name IN (' . $itemNameList . ') ');
 		foreach($itemdetails as $itemrow){
 			$lootstack[strtolower($itemrow['name'])]->itemid = $itemrow['type_id'];
+			
+			if ($itemrow['price_is_valid']) {
+				$lootstack[strtolower($itemrow['name'])]->itemprice = $itemrow['last_price'];
+			} else {
+				$lootstack[strtolower($itemrow['name'])]->itemprice = null;
+			} // else
 		} // foreach
 	} // if
 
 	//make a simple typeid string for the json request
 	$itemids = '';
 	foreach($lootstack as $loot){
-		$itemids.= empty($itemids) ? $loot->itemid : ',' . $loot->itemid;
+		if ($loot->itemprice !== null) {
+			$itemids.= empty($itemids) ? $loot->itemid : ',' . $loot->itemid;
+		}
 	}
 
 	//do a json request @ the EMDR source
@@ -67,6 +75,9 @@ if(isset($_POST['lootlog'])){
 		foreach($lootstack as $loot){
 			if($loot->itemid == $priceresult->row->typeID){
 				$loot->itemprice = $priceresult->row->price;
+	
+				$db_conn->exec('UPDATE eve_inv_types SET last_price = ' . (float) $loot->itemprice . 
+						  ' WHERE price_valid_till = NOW() + INTERVAL \'24 hours\', name = ' . $db_conn->quote($loot->name));
 			}
 		}
 	}
