@@ -6,8 +6,6 @@ $db_username = 'PutYourUsernameHere';
 $db_password = 'PutYourPasswordHere';
 $eve_character_name = 'PutACharacterNameWhereYouCanBeContactedHere';
 
-$db_conn = new PDO($db_connectionString, $db_username, $db_password);
-
 //initialize a simple loot class
 class Loot {
 	public $itemid;
@@ -20,6 +18,8 @@ $lootstack = array();
 
 //check if a lootlog is being posted
 if(isset($_POST['lootlog'])){
+	$db_conn = new PDO($db_connectionString, $db_username, $db_password);
+
 
 	/* 
 	 * replace 3-9 spaces with tabs in case the lootlog was copied from a mail 
