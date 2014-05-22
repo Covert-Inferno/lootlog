@@ -84,7 +84,7 @@ if(isset($_POST['lootlog'])){
 				$db_conn->exec('INSERT INTO eve_inv_pricecache(type_id, cached_price, valid_till) 
 				                  VALUES(' . (int) $loot->itemid . ', 
 				                         ' . (float) $loot->itemprice . ',
-				                         'NOW() + INTERVAL 1 DAY)');
+				                         NOW() + INTERVAL 1 DAY)');
 			}
 		}
 	}
